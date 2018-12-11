@@ -3,18 +3,55 @@
     <div class="login-wrap" v-show="showLogin">
       <h3>登录</h3>
       <p v-show="showTishi">{{tishi}}</p>
-      <input type="text" placeholder="请输入用户名" v-model="username">
-      <input type="password" placeholder="请输入密码" v-model="password">
-      <button v-on:click="login">登录</button>
+      <el-input 
+      class="input"
+      placeholder="请输入用户名"
+      v-model="username"
+      clearable>
+      </el-input>
+      <br>
+      <el-input 
+      class="input"
+      placeholder="请输入密码"
+      v-model="password"
+      type="password"
+      clearable>
+      </el-input>
+      <br>
+      <el-button type="primary" @click="login" round class="button">登录</el-button>
+      <!-- <button v-on:click="login">登录</button> -->
       <span v-on:click="ToRegister">没有账号？马上注册</span>
     </div>
 
     <div class="register-wrap" v-show="showRegister">
       <h3>注册</h3>
       <p v-show="showTishi">{{tishi}}</p>
-      <input type="text" placeholder="请输入用户名" v-model="newUsername">
-      <input type="password" placeholder="请输入密码" v-model="newPassword">
-      <button v-on:click="register">注册</button>
+      <el-input 
+      class="input"
+      placeholder="请输入用户名"
+      v-model="newUsername"
+      clearable>
+      </el-input>
+      <br>
+
+      <el-input 
+      class="input"
+      placeholder="请输入邮箱"
+      v-model="mailAddress"
+      clearable>
+      </el-input>
+      <br>
+      <el-input 
+      class="input"
+      placeholder="请输入密码"
+      v-model="newPassword"
+      type="password"
+      clearable>
+      </el-input>
+
+      <br>
+      <el-button type="primary" @click="register" round class="button">注册</el-button>
+      
       <span v-on:click="ToLogin">已有账号？马上登录</span>
     </div>
   </div>
@@ -23,42 +60,40 @@
 <style scoped>
 .login-wrap {
   text-align: center;
+  margin-top: 50px;
 }
 .register-wrap {
   text-align: center;
+  margin-top: 50px;
 }
-input {
-  display: block;
-  width: 250px;
-  height: 40px;
-  line-height: 40px;
+
+.input{
+  width:18%;
   margin: 0 auto;
-  margin-bottom: 10px;
-  outline: none;
-  border: 1px solid #888;
-  padding: 10px;
-  box-sizing: border-box;
+  margin-bottom: 7px;
+  padding: 8px;
 }
 p {
   color: red;
 }
-button {
+
+.button{
   display: block;
-  width: 250px;
+  width: 200px;
   height: 40px;
-  line-height: 40px;
   margin: 0 auto;
-  border: none;
-  background-color: #41b883;
-  color: #fff;
-  font-size: 16px;
   margin-bottom: 5px;
 }
+
 span {
   cursor: pointer;
 }
 span:hover {
   color: #41b883;
+}
+
+h3{
+  margin-bottom: 10px;
 }
 </style>
 
@@ -75,7 +110,8 @@ export default {
       username: "",
       password: "",
       newUsername: "",
-      newPassword: ""
+      newPassword: "",
+      mailAddress:""
     };
   },
   mounted() {

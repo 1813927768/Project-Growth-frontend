@@ -13,7 +13,7 @@ var Menus = [{
 }, {
     name: '推荐',
     id: 'RA',
-    componentName: 'FormCheckbox'
+    componentName: 'Recom'
 }]
 
 export default Menus;
