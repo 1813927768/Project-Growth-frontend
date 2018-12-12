@@ -19,18 +19,38 @@
       ></el-menu-item>
       <el-submenu index="2">
         <template slot="title">设置</template>
-        <el-menu-item index="2-1" @click="modal1 = true">账户设置</el-menu-item>
+        <el-menu-item index="2-1" @click="accountShow = true">账户设置</el-menu-item>
         <el-menu-item index="2-2">任务设置</el-menu-item>
         <el-menu-item index="2-3">退出</el-menu-item>
       </el-submenu>
     </el-menu>
     <div class="line"></div>
-    <Modal v-model="modal1" @on-ok="ok" @on-cancel="cancel" width="400">
+    <Modal v-model="accountShow" @on-ok="ok" @on-cancel="cancel" width="400">
       <Tabs value="name1">
         <TabPane label="账号" name="name1">
-          <p>姓名：</p>
+        <div>
+          <label class="one-line">姓名：</label> 
+          <div class="one-line" v-if="changeName">
+            <Input v-model="nameValue" placeholder="Enter something..." style="width: 200px" />
+            <Button>保存</Button>
+          </div>
+          <div class="one-line" v-else>
+            <span>userName</span>
+            <Button type="text" @click="changeName = true">更换</Button>
+          </div>
+        </div>
           <br>
-          <p>邮箱：</p>
+        <div>
+          <label class="one-line">邮箱：</label> 
+          <div class="one-line" v-if="changeMail">
+            <Input v-model="mailValue" placeholder="Enter something..." style="width: 200px" />
+            <Button>保存</Button>
+          </div>
+          <div class="one-line" v-else>
+            <span>userMail</span>
+            <Button type="text" @click="changeMail = true">更换</Button>
+          </div>
+        </div>
         </TabPane>
         <TabPane label="账号安全" name="name2">
           <div>原密码:
@@ -55,7 +75,11 @@ export default {
     return {
       activeIndex: "3",
       activeIndex2: "2",
-      modal1: false,
+      accountShow: false,
+      changeName: false,
+      nameValue:"",
+      changeMail:false,
+      mailValue:"",
       originalPW: "",
       newPW: "",
       Menus: Menus
@@ -88,5 +112,8 @@ export default {
 }
 .input-item {
   width: 200px;
+}
+.one-line{
+  display: inline-block;
 }
 </style>
