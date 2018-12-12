@@ -9,8 +9,11 @@ var demoEvents = [
   {
     title: "Sunny Out of Office",
     start: "2018-12-06",
-    end: "2018-12-07"
-  }
+  },
+    {
+    title: "Sunny Out of Office",
+    start: "2018-12-08",
+  },
 ];
 
 export default {

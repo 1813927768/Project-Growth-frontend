@@ -15,24 +15,65 @@
       </div>
     </div>
     <div class="section-container">
-      <el-card class="box-card">
-        <img src="@/assets/logo.png" class="image">
+      <el-card class="box-card"  v-for="i in articles" :key="i.id">
+        <img src="https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=1802563968,897623865&fm=15&gp=0.jpg" class="image">
         <div class="article-container">
           <a href="https://tutorialzine.com/articles">
-            <h3>The Best JavaScript and CSS Libraries for 2018</h3>
+            <h3>{{i.title}}</h3>
           </a>
-          <p>A recap of our favorite web dev resources for 2018, featuring some of the best libraries, frameworks and tools of the past year.</p>
+          <p>{{i.content}}</p>
         </div>
         <div class="article-footer">
-          <p class="aurthor">Aurthor</p>
-          <p class="aurthor">date</p>
-          <p class="tag">tag</p>
+          <p class="aurthor">{{i.author}}</p>
+          <p class="aurthor">{{i.clickcount}}</p>
+          <p class="tag">{{i.tags}}</p>
         </div>
       </el-card>
     </div>
   </div>
 </template>
 
+<script>
+var sourceData = [{"tags":0,"title":"最适合入门的编程语言——python","content":null,"clickcount":"阅读数：3057","author":"cclplus"},{"tags":0,"title":"物联网安全综述报告","content":null,"clickcount":"阅读数：1251","author":"Newtol"},{"tags":0,"title":"编程语言Java的JDK","content":null,"clickcount":"阅读数：2265","author":"weilaizhou"},{"tags":0,"title":"Scrum团队应该如何选择Scrum工具？","content":null,"clickcount":"阅读数：1156","author":"Agile_zhanglao"},{"tags":0,"title":"终于有人把云计算、大数据和人工智能讲明白了！ （2）","content":null,"clickcount":"阅读数：2506","author":"网易云"},{"tags":0,"title":"docker入门（四）","content":null,"clickcount":"阅读数：2450","author":"Java小表弟"},{"tags":0,"title":"web 基础巩固——JSP基础","content":null,"clickcount":"阅读数：948","author":"SXJR"},{"tags":0,"title":"编程语言的分类Dynamic、Statically","content":null,"clickcount":"阅读数：1117","author":"freshZero_"},{"tags":0,"title":"一点资讯大数据面试题","content":null,"clickcount":"阅读数：1750","author":"柯南爱上指针"},{"tags":0,"title":"从程序员到架构师——踏上架构旅途 思考从未止步","content":null,"clickcount":"阅读数：1040","author":"博文视点"}]
+
+export default {
+  data() {
+    return {
+      articles: [],
+      tags: [
+        { name: "标签一", type: "" },
+        { name: "标签二", type: "success" },
+        { name: "标签三", type: "info" },
+        { name: "标签四", type: "warning" },
+        { name: "标签五", type: "danger" }
+      ]
+    };
+  },
+  methods: {
+    handleClose(tag) {
+      this.tags.splice(this.tags.indexOf(tag), 1);
+    }
+  },
+    mounted() {
+    // Lambda写法
+    this.$http
+      .get("http://localhost:8080/getPopularArticle")
+      .then(
+        res => {
+          // 响应成功回调
+          //console.log(res.body);
+          this.articles = res.body;
+        },
+        res => {
+          // 响应错误回调
+          console.log("fail");
+        }
+      ).catch(
+        ()=>{console.log("fail2");}
+      );
+  },
+};
+</script>
 
 <style scoped>
 .head-tag {
@@ -142,24 +183,3 @@ h3 {
 }
 </style>
 
-<script>
-export default {
-  data() {
-    return {
-      currentDate: new Date(),
-      tags: [
-        { name: "标签一", type: "" },
-        { name: "标签二", type: "success" },
-        { name: "标签三", type: "info" },
-        { name: "标签四", type: "warning" },
-        { name: "标签五", type: "danger" }
-      ]
-    };
-  },
-  methods: {
-    handleClose(tag) {
-      this.tags.splice(this.tags.indexOf(tag), 1);
-    }
-  }
-};
-</script>
