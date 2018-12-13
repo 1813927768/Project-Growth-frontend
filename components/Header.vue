@@ -16,12 +16,13 @@
         v-text="item.name"
         :index="item.componentName"
         :key="item.id"
+        v-if="isVerified"
       ></el-menu-item>
-      <el-submenu index="2">
+      <el-submenu index="2" v-if="isVerified">
         <template slot="title">设置</template>
-        <el-menu-item index="2-1" @click="accountShow = true">账户设置</el-menu-item>
-        <el-menu-item index="2-2" @click="taskShow = true">任务设置</el-menu-item>
-        <el-menu-item index="2-3">退出</el-menu-item>
+        <el-menu-item index="2-1" :route="{path:this.$route.path}" @click="accountShow = true">账户设置</el-menu-item>
+        <el-menu-item index="2-2" :route="{path:this.$route.path}" @click="taskShow = true">任务设置</el-menu-item>
+        <el-menu-item index="2-3" :route="{path:this.$route.path}">退出</el-menu-item>
       </el-submenu>
     </el-menu>
     <Modal v-model="accountShow" @on-ok="ok" @on-cancel="cancel" width="400">
@@ -111,6 +112,7 @@ import Menus from "@/config/header-config";
 export default {
   data() {
     return {
+      //isVerified:true,
       activeIndex: "3",
       activeIndex2: "2",
       accountShow: false,
@@ -129,9 +131,11 @@ export default {
       Menus: Menus
     };
   },
+  props: ['isVerified'],
   methods: {
     handleSelect(key, keyPath) {
       console.log(key, keyPath);
+      //this.isVerified = false;
     },
     ok() {
       this.$Message.info("确认提交");
@@ -166,4 +170,5 @@ export default {
   margin-bottom: 5px;
   width: 50px;
 }
+
 </style>

@@ -117,7 +117,7 @@ export default {
   mounted() {
     /*页面挂载获取cookie，如果存在username的cookie，则跳转到主页，不需登录*/
     if (getCookie("username")) {
-      this.$router.push("/FormCheckbox");
+      this.$router.push("/PomoMode");
     }
   },
   methods: {
@@ -177,6 +177,8 @@ export default {
             } else {
               this.tishi = "登录成功";
               this.showTishi = true;
+              /*向父组件传值*/
+              this.$emit('userSignIn', this.username);
               setCookie("username", this.username, 1000 * 60);
               setTimeout(
                 function() {

@@ -32,7 +32,7 @@ routes[2].children = croutes;
 
 routes.push({
   path: `/`,
-  name: "Login",
+  name: 'Login',
   component: () => import(`@/components/Login`),
 })
 
