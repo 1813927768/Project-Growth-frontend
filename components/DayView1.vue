@@ -44,7 +44,8 @@
         <p>放弃了{{tomotoNum(item)}}个番茄</p>
       </div>
       <el-card shadow="never" class="box-card card-sum">每日小结
-        <p>{{sumContents}}</p>
+        <Rate style="float:right;" allow-half v-model="rate"/>
+        <p class="sum-content">{{sumContents}}</p>
       </el-card>
     </div>
     <Page :total="size" @on-change="pageChange" show-elevator class="footer"/>
@@ -106,9 +107,10 @@ export default {
   data() {
     return {
       items: sourceData,
+      rate: 5,
       selectedDate: "请选择时间范围",
       weekday: "",
-      sumContents: "",
+      sumContents: "小结内容",
       size: 0,
       options1: {
         shortcuts: [
@@ -237,10 +239,17 @@ export default {
 
 .card-sum {
   margin: 50px;
-  padding: 15px;
+  padding: 10px;
   width: 380px;
   font-size: 15px;
   font-weight: bold;
+  border-width: 2px;
+}
+
+.sum-content {
+  font-size: 12px;
+  padding-top: 5px;
+  font-weight: lighter;
 }
 
 .selector {
