@@ -5,6 +5,7 @@
       <div style="margin-top:10px">
         <el-tag
           class="head-tag"
+          v-if="loading"
           v-for="tag in tags"
           :key="tag.name"
           closable
@@ -15,18 +16,23 @@
       </div>
     </div>
     <div class="section-container">
-      <el-card class="box-card"  v-for="i in articles" :key="i.id">
-        <img src="https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=1802563968,897623865&fm=15&gp=0.jpg" class="image">
-        <div class="article-container">
-          <a href="https://tutorialzine.com/articles">
-            <h3>{{i.title}}</h3>
-          </a>
-          <p>{{i.content}}</p>
-        </div>
-        <div class="article-footer">
-          <p class="aurthor">{{i.author}}</p>
-          <p class="aurthor">{{i.clickcount}}</p>
-          <p class="tag">{{i.tags}}</p>
+      <el-card class="box-card" v-for="i in showArticles" :key="i.id">
+        <img
+          src="https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=1802563968,897623865&fm=15&gp=0.jpg"
+          class="image"
+        >
+        <div class="article">
+          <div class="article-container">
+            <a :href="i.url">
+              <h3>{{i.title}}</h3>
+            </a>
+            <p>{{i.intro}}</p>
+          </div>
+          <div class="article-footer">
+            <p class="aurthor">{{i.author}}</p>
+            <!-- <p class="click-count">{{i.clickcount}}</p> -->
+            <p class="tag">{{numToTag[i.tags]}}</p>
+          </div>
         </div>
       </el-card>
     </div>
@@ -34,44 +40,67 @@
 </template>
 
 <script>
-var sourceData = [{"tags":0,"title":"最适合入门的编程语言——python","content":null,"clickcount":"阅读数：3057","author":"cclplus"},{"tags":0,"title":"物联网安全综述报告","content":null,"clickcount":"阅读数：1251","author":"Newtol"},{"tags":0,"title":"编程语言Java的JDK","content":null,"clickcount":"阅读数：2265","author":"weilaizhou"},{"tags":0,"title":"Scrum团队应该如何选择Scrum工具？","content":null,"clickcount":"阅读数：1156","author":"Agile_zhanglao"},{"tags":0,"title":"终于有人把云计算、大数据和人工智能讲明白了！ （2）","content":null,"clickcount":"阅读数：2506","author":"网易云"},{"tags":0,"title":"docker入门（四）","content":null,"clickcount":"阅读数：2450","author":"Java小表弟"},{"tags":0,"title":"web 基础巩固——JSP基础","content":null,"clickcount":"阅读数：948","author":"SXJR"},{"tags":0,"title":"编程语言的分类Dynamic、Statically","content":null,"clickcount":"阅读数：1117","author":"freshZero_"},{"tags":0,"title":"一点资讯大数据面试题","content":null,"clickcount":"阅读数：1750","author":"柯南爱上指针"},{"tags":0,"title":"从程序员到架构师——踏上架构旅途 思考从未止步","content":null,"clickcount":"阅读数：1040","author":"博文视点"}]
+var articleurl = "http://localhost:8080/getRecommendArticle";
 
 export default {
   data() {
     return {
       articles: [],
+      showArticles: [],
+      userID: 2,
+      loading: false,
       tags: [
         { name: "标签一", type: "" },
         { name: "标签二", type: "success" },
         { name: "标签三", type: "info" },
         { name: "标签四", type: "warning" },
         { name: "标签五", type: "danger" }
-      ]
+      ],
+      numToTag: []
     };
   },
   methods: {
     handleClose(tag) {
       this.tags.splice(this.tags.indexOf(tag), 1);
+      console.log(tag.name);
+      for (let i = 0; i < this.showArticles.length; i++) {
+        let tagNum = this.showArticles[i].tags;
+        let tagName = this.numToTag[tagNum];
+        //debugger;
+        if (tagName == tag.name) {
+          //删除对应位置article后，需要保持游标位置不变
+          this.showArticles.splice(i--, 1);
+        }
+      }
     }
   },
-    mounted() {
+  mounted() {
     // Lambda写法
     this.$http
-      .get("http://localhost:8080/getPopularArticle")
+      .get(articleurl, {
+        params: { userId: this.userID }
+      })
       .then(
         res => {
           // 响应成功回调
-          //console.log(res.body);
-          this.articles = res.body;
+          var returnData = res.body;
+          this.showArticles = this.articles = returnData.Article;
+          this.numToTag = returnData.tags;
+          var tagName = Object.values(this.numToTag);
+          for (var i = 0; i < tagName.length; i++) {
+            this.tags[i].name = tagName[i];
+          }
+          this.loading = true;
         },
         res => {
           // 响应错误回调
           console.log("fail");
         }
-      ).catch(
-        ()=>{console.log("fail2");}
-      );
-  },
+      )
+      .catch(() => {
+        console.log("fail2");
+      });
+  }
 };
 </script>
 
@@ -84,7 +113,7 @@ export default {
 }
 
 .tag {
-  margin: 3px;
+  margin: 5px;
   border: 1px solid #dcdfe6;
   border-color: #ebeef5;
   border-radius: 18px;
@@ -98,12 +127,23 @@ export default {
   margin: 5px;
 }
 
+.click-count {
+  font-size: 0.8em;
+  color: #bababa;
+  margin: 5px;
+}
+
+.article {
+  border: 20px;
+}
+
 .article-footer {
   position: relative;
+  padding: 18px;
 }
 
 .article-container {
-  padding: 14px;
+  padding: 18px;
   position: relative;
 }
 
@@ -170,8 +210,7 @@ export default {
 }
 
 .box-card {
-  padding: "0px";
-  width: 380px;
+  width: 350px;
   margin: 13px;
 }
 
@@ -182,4 +221,11 @@ h3 {
   margin-bottom: 1em;
 }
 </style>
+
+<style>
+.el-card__body {
+  padding: 0px !important;
+}
+</style>
+
 

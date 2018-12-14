@@ -2,21 +2,33 @@
   <div class="container">
     <el-card class="box-card-his">
       <div slot="header" class="clearfix">
-        <span>最近一周工作情况</span>
-        <el-button style="float: right; padding: 3px 0" type="text">查看详细数据</el-button>
+        <span>最近一月工作情况</span>
+        <el-button @click="navToDayView" style="float: right; padding: 3px 0" type="text">查看详细数据</el-button>
       </div>
 
       <ve-line :data="chartData" :settings="chartSettings"></ve-line>
+
+      <p class="align-center">您的最佳工作日是{{bestDay}}</p>
     </el-card>
 
     <el-card class="box-card">
-      <ve-pie :data="chartData1"></ve-pie>
+      <ve-pie :data="pieData" class="pie-chart"></ve-pie>
+      <p class="align-center">您的最佳工作时段是{{bestTime}}</p>
     </el-card>
   </div>
 </template>
 
 
 <style scoped>
+.align-center {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.pie-chart {
+  margin-top: 10px;
+}
+
 .container {
   display: flex;
   flex-direction: row;
@@ -42,36 +54,81 @@ import "echarts/lib/chart/line";
 import VeLine from "v-charts/lib/line";
 import VePie from "v-charts/lib/pie.js";
 
+// var weekdata = [  //测试数据
+//   { weekday: "周一", taskcount: 1393, tomatocount: 1093 },
+//   { weekday: "周二", taskcount: 3530, tomatocount: 3230 },
+//   { weekday: "周三", taskcount: 2923, tomatocount: 2623 },
+//   { weekday: "周四", taskcount: 1723, tomatocount: 1423 },
+//   { weekday: "周五", taskcount: 3792, tomatocount: 3492 },
+//   { weekday: "周六", taskcount: 4593, tomatocount: 4293 },
+//   { weekday: "周日", taskcount: 4593, tomatocount: 4293 }
+// ];
+
+var weekurl = "http://localhost:8080/getWeekdaySuggestion";
+var timeurl = "http://localhost:8080/getTimeSuggestion";
+
 export default {
   components: { VeLine, VePie },
   data() {
     this.chartSettings = {
-      stack: { 用户: ["taskNum", "pomoNum"] },
+      stack: { 用户: ["taskcount", "tomatocount"] },
       area: true
     };
-    return {
-      chartData1: {
-        columns: ["时刻", "taskNum"],
-        rows: [
-          { 时刻: "上午", taskNum: 1393 },
-          { 时刻: "下午", taskNum: 3530 },
-          { 时刻: "晚上", taskNum: 2923 },
 
-        ]
+    return {
+      userID: 2,
+      bestDay: "周三",
+      bestTime: "上午",
+      pieData: {
+        columns: ["time", "taskcount"],
+        rows: []
       },
       chartData: {
-        columns: ["日期", "taskNum", "pomoNum"],
-        rows: [
-          { 日期: "周一", taskNum: 1393, pomoNum: 1093},
-          { 日期: "周二", taskNum: 3530, pomoNum: 3230},
-          { 日期: "周三", taskNum: 2923, pomoNum: 2623},
-          { 日期: "周四", taskNum: 1723, pomoNum: 1423},
-          { 日期: "周五", taskNum: 3792, pomoNum: 3492},
-          { 日期: "周六", taskNum: 4593, pomoNum: 4293},
-          { 日期: "周日", taskNum: 4593, pomoNum: 4293},
-        ]
+        columns: ["weekday", "taskcount", "tomatocount"],
+        rows: []
       }
     };
+  },
+  methods: {
+    navToDayView() {
+      this.$router.push({ path: "DayView1" });
+    }
+  },
+  mounted() {
+    this.$http
+      .get(weekurl, {
+        params: { userid: this.userID }
+      })
+      .then(
+        res => {
+          // 响应成功回调
+          //console.log(res.body);
+          var returnData = res.body;
+          this.chartData.rows = returnData.data;
+          this.bestDay = returnData.result;
+        },
+        res => {
+          // 响应错误回调
+          console.log("week advice request fail");
+        }
+      );
+    this.$http
+      .get(timeurl, {
+        params: { userid: this.userID }
+      })
+      .then(
+        res => {
+          // 响应成功回调
+          //console.log(res.body);
+          var returnData = res.body;
+          this.pieData.rows = returnData.data;
+          this.bestTime = returnData.result;
+        },
+        res => {
+          // 响应错误回调
+          console.log("time advice request fail");
+        }
+      );
   }
 };
 </script>

@@ -221,7 +221,7 @@ export default {
 .box-card {
   width: 300px;
   margin: 50px;
-  margin-left: 80px;
+  margin-left: 70px;
   font-size: 13px;
 }
 
@@ -237,6 +237,7 @@ export default {
 
 .card-sum {
   margin: 50px;
+  padding: 15px;
   width: 380px;
   font-size: 15px;
   font-weight: bold;
