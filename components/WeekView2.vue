@@ -25,17 +25,12 @@
 <script>
 import VeLine from "v-charts/lib/line";
 
-//判断溢出类型（假设目标数组已经有序）
+//判断溢出类型
 //1 溢出
 //0 不溢出
 function check(start, arr) {
-  let max = arr[arr.length - 1];
-  let min = arr[0];
   //起止日期同一年
-  if (start > max || start < min) {
-    //超出目标范围
-    return 1;
-  } else if (arr.indexOf(start) >= -1) {
+  if (arr.indexOf(start) > -1) {
     //在数组内
     return 0;
   } else {
@@ -43,39 +38,6 @@ function check(start, arr) {
     return 1;
   }
 }
-
-//完整的格式化  var time2 = new Date().format("yyyy-MM-dd hh:mm:ss");
-Date.prototype.format = function(fmt) {
-  var o = {
-    "M+": this.getMonth() + 1, //月份
-    "d+": this.getDate(), //日
-    "h+": this.getHours(), //小时
-    "m+": this.getMinutes(), //分
-    "s+": this.getSeconds(), //秒
-    "q+": Math.floor((this.getMonth() + 3) / 3), //季度
-    S: this.getMilliseconds() //毫秒
-  };
-  //处理年份
-  var reYear = /(y+)/;
-  var resultYear = reYear.exec(fmt);
-  if (resultYear) {
-    var yearformatPart = resultYear[0]; //匹配到的格式化字符
-    var yearVal = (this.getFullYear() + "").substr(4 - yearformatPart.length);
-    fmt = fmt.replace(yearformatPart, yearVal);
-  }
-  for (var k in o) {
-    var re = new RegExp("(" + k + ")");
-    var re = re.exec(fmt);
-    if (re) {
-      var Val = "" + o[k]; //本次需要替换的数据
-      var formatPart = re[0]; //匹配到的格式化字符
-      var replaceVal =
-        formatPart.length == 1 ? Val : ("00" + Val).substr(Val.length);
-      fmt = fmt.replace(formatPart, replaceVal);
-    }
-  }
-  return fmt;
-};
 
 var sourceData = [
   //测试数据
@@ -100,21 +62,6 @@ const EMPTY_DATA = {
   columns: ["date", "tomatocount", "taskCount"],
   rows: []
 };
-
-function date_slice(start_date, end_date, source) {
-  //从数据源切割
-  var result = [];
-  for (let j = 0; j < source.length; j++) {
-    var item = source[j];
-    //debugger;
-    if (item.date >= start_date && item.date <= end_date) {
-      result.push(item);
-    } else if (item.date > end_date) {
-      break;
-    }
-  }
-  return result;
-}
 
 var now = new Date(); //当前时刻
 var nowTime = now.format("yyyy-MM-dd");
@@ -149,8 +96,7 @@ export default {
         monthAgo,
         nowTime,
         () => {
-          sourceData = dbData;
-          var selectedData = sourceData;
+          var selectedData = dbData;
           this.updateData(selectedData);
         },
         "weekDB"
@@ -171,8 +117,8 @@ export default {
             //console.log(res.body);
             var returnData = res.body;
             var selectedData = date_slice(
-              this.date[0],
-              this.date[1],
+              this.date[0].format("yyyy-MM-dd"),
+              this.date[1].format("yyyy-MM-dd"),
               returnData
             );
             this.updateData(selectedData);
@@ -182,14 +128,14 @@ export default {
             }
           },
           res => {
-            console.log("获取信息失败");
+            console.log("获取信息失败" + res);
           }
         )
         .catch(res => {
           console.log("处理请求失败");
         });
       //将请求的年份存储到session
-      this.storedYear = [new Date().getFullYear()];
+      this.storedYear = [new Date().getFullYear().toString()];
       sessionStorage.storedYear = JSON.stringify(this.storedYear);
     }
   },
@@ -200,6 +146,7 @@ export default {
       console.log("timechange");
       var reqMaxYear = val[1].split("-")[0];
       var reqMinYear = val[0].split("-")[0];
+      //debugger;
       if (reqMaxYear !== reqMinYear) {
         this.$Message.info("选择的时间范围不能跨年");
         console.log("跨年选择失败");
@@ -217,8 +164,7 @@ export default {
           val[0],
           val[1],
           () => {
-            sourceData = dbData;
-            var selectedData = sourceData;
+            var selectedData = dbData;
             this.updateData(selectedData);
           },
           "weekDB"
@@ -266,7 +212,7 @@ export default {
           }
           //完全溢出什么都不更新
           var selectedData = date_slice(startDate, endDate, returnData);
-          debugger;
+          //debugger;
           this.updateData(selectedData);
           for (var i of returnData) {
             //debugger;
@@ -277,7 +223,6 @@ export default {
           console.log("获取信息失败");
         });
       this.storedYear.push(year);
-      this.storedYear.sort();
       sessionStorage.storedYear = JSON.stringify(this.storedYear);
     }
   }

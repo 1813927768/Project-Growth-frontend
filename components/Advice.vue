@@ -67,6 +67,18 @@ import VePie from "v-charts/lib/pie.js";
 var weekurl = "http://localhost:8080/getWeekdaySuggestion";
 var timeurl = "http://localhost:8080/getTimeSuggestion";
 
+function findBest(data) {
+  var best = 0;
+  var index = 0;
+  for (var i = 0; i < data.length; i++) {
+    if (data[i] >= best) {
+      best = data[i];
+      index = i;
+    }
+  }
+  return index;
+}
+
 export default {
   components: { VeLine, VePie },
   data() {
@@ -105,7 +117,10 @@ export default {
           //console.log(res.body);
           var returnData = res.body;
           this.chartData.rows = returnData.data;
-          this.bestDay = returnData.result;
+          var totalNum = returnData.data.map(item => {
+            return item.taskcount + item.tomatocount;
+          });
+          this.bestDay = returnData.data[findBest(totalNum)].weekday;
         },
         res => {
           // 响应错误回调
