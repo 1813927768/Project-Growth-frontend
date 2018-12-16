@@ -31,11 +31,25 @@ menus.forEach(element => {
 routes[2].children = croutes;
 
 routes.push({
-  path: `/`,
+  path: `/Login`,
   name: 'Login',
   component: () => import(`@/components/Login`),
+  // props: true,
 })
 
+routes.push({
+  path: `/Reg`,
+  name: 'Reg',
+  component: () => import(`@/components/Register`),
+  // props: true,
+})
+
+routes.push({
+  path: `/`,
+  name: 'FrontPage',
+  component: () => import(`@/components/FrontPage`),
+  // props: true,
+})
 
 export default new Router({
   routes

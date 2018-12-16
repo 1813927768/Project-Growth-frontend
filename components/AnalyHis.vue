@@ -17,6 +17,10 @@ import NavMenu from "@/components/NavMenu";
 export default {
   components: {
     navmenu: NavMenu
+  },
+  mounted() {
+    console.log("his page");
+    this.$router.push({ name: "DayView1" });
   }
 };
 </script>

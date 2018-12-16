@@ -41,10 +41,10 @@
         <p>总计{{totalTime(item.content)}}</p>
       </div>
       <div class="box-card" v-else-if="selectedItem === '已完成的任务'">
-        <p>完成了{{tomotoNum(item.content)}}个任务</p>
+        <p>完成了{{tomotoNum(item.tempResult)}}个任务</p>
       </div>
       <div class="box-card" v-else-if="selectedItem === '放弃的任务'">
-        <p>放弃了{{tomotoNum(item.content)}}个任务</p>
+        <p>放弃了{{tomotoNum(item.tempResult)}}个任务</p>
       </div>
       <div class="box-card" v-else-if="selectedItem === '中断的番茄'">
         <p>放弃了{{tomotoNum(item.content)}}个番茄</p>
@@ -153,14 +153,19 @@ export default {
       selectedItem: "已完成的番茄"
     };
   },
+  beforeCreate() {
+    // console.log("刷新");
+    localStorage.clear();
+  },
   mounted() {
     openDB("dayTomoDB");
     openDB("dayTaskDB");
     openDB("daySumDB");
-    if (sessionStorage.dayhis) {
+    this.userID = sessionStorage.userId;
+    if (localStorage.dayhis) {
       //如果不是第一次进入页面，从数据库请求
-      this.storedTomoYear = JSON.parse(sessionStorage.storedTomoYear);
-      this.storedTaskYear = JSON.parse(sessionStorage.storedTaskYear);
+      this.storedTomoYear = JSON.parse(localStorage.storedTomoYear);
+      this.storedTaskYear = JSON.parse(localStorage.storedTaskYear);
       searchData(
         monthAgo,
         nowTime,
@@ -192,9 +197,9 @@ export default {
           }
         })
         .catch(() => {
-          console.log("获取信息失败");
+          console.log("获取小结信息失败");
         });
-      sessionStorage.dayhis = true;
+      localStorage.dayhis = true;
       this.$http
         .get(tomourl, {
           params: {
@@ -217,18 +222,18 @@ export default {
               //debugger;
               saveData(i, "dayTomoDB");
             }
+            this.storedTomoYear = [new Date().getFullYear().toString()];
           },
           res => {
-            console.log("获取信息失败");
+            console.log("获取番茄信息失败");
           }
         )
         .catch(res => {
           console.log("处理请求失败" + res);
         });
       //将请求的年份存储到session
-      this.storedTomoYear = [new Date().getFullYear().toString()];
-      sessionStorage.storedTomoYear = JSON.stringify(this.storedTomoYear);
-      sessionStorage.storedTaskYear = JSON.stringify(this.storedTaskYear);
+      localStorage.storedTomoYear = JSON.stringify(this.storedTomoYear);
+      localStorage.storedTaskYear = JSON.stringify(this.storedTaskYear);
     }
   },
   methods: {
@@ -325,6 +330,10 @@ export default {
       var start = (index - 1) * this.pageSize;
       var end = index * this.pageSize;
       this.showData = this.sourceData.slice(start, end);
+      //更新每日小结数据
+      //想回复到初始状态
+      this.updateSum = true;
+      this.i = 0;
       for (var i = 0; i < this.showData.length; i++) {
         let date = this.showData[i].date;
         // var that = this;
@@ -335,7 +344,12 @@ export default {
     },
     //更新自我总结数据
     updateSumData(selectedData) {
-      this.showSumData[this.i] = selectedData;
+      // debugger;
+      if (selectedData) {
+        this.showSumData[this.i] = selectedData;
+      } else {
+        this.showSumData[this.i] = tempSum;
+      }
       this.i++;
       if (this.i == this.showData.length) {
         this.updateSum = false;
@@ -344,20 +358,24 @@ export default {
     },
     //计算一共做了几个番茄或任务
     tomotoNum: function(val) {
-      return val.length;
+      if (val) {
+        return val.length;
+      }
     },
     //计算一共花了多少时间
     totalTime: function(items) {
-      var total = 0;
-      for (var i = 0; i < items.length; i++) {
-        total += getTimeDiff(items[i].start, items[i].end);
+      if (items) {
+        var total = 0;
+        for (var i = 0; i < items.length; i++) {
+          total += getTimeDiff(items[i].start, items[i].end);
+        }
+        var hours = parseInt(total / 60); //小时
+        var minutes = total % 60; //分钟
+        if (hours === 0) {
+          return minutes + "分钟";
+        }
+        return hours + "小时" + minutes + "分钟";
       }
-      var hours = parseInt(total / 60); //小时
-      var minutes = total % 60; //分钟
-      if (hours === 0) {
-        return minutes + "分钟";
-      }
-      return hours + "小时" + minutes + "分钟";
     },
     //更新页面数据
     updateData(selectedData) {
@@ -408,15 +426,13 @@ export default {
             endDate = year + "-12-31";
           }
           //完全溢出什么都不更新
-          //var selectedData = date_slice(startDate, endDate, returnData);
-          //debugger;
-          //this.updateData(selectedData);
+
           for (var i of returnData) {
             saveData(i, "daySumDB");
           }
         })
         .catch(() => {
-          console.log("获取信息失败");
+          console.log("获取小结失败");
         });
       //如果请求的是番茄数据
       if (dbName == "dayTomoDB") {
@@ -448,12 +464,12 @@ export default {
               //debugger;
               saveData(i, "dayTomoDB");
             }
+            this.storedTomoYear.push(year);
+            localStorage.storedTomoYear = JSON.stringify(this.storedTomoYear);
           })
           .catch(() => {
-            console.log("获取信息失败");
+            console.log("获取番茄信息失败");
           });
-        this.storedTomoYear.push(year);
-        sessionStorage.storedTomoYear = JSON.stringify(this.storedTomoYear);
       }
       //如果请求的是任务的数据
       else if (dbName == "dayTaskDB") {
@@ -486,12 +502,12 @@ export default {
               //debugger;
               saveData(i, "dayTaskDB");
             }
+            this.storedTaskYear.push(year);
+            localStorage.storedTaskYear = JSON.stringify(this.storedTaskYear);
           })
           .catch(res => {
-            console.log("获取信息失败" + res);
+            console.log("获取任务信息失败" + res);
           });
-        this.storedTaskYear.push(year);
-        sessionStorage.storedTaskYear = JSON.stringify(this.storedTaskYear);
       }
     }
   },

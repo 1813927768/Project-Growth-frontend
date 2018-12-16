@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-container>
-      <el-aside width="300px">
+      <el-aside width="400px">
         <tasklist @transferTask="getTask" :tableData="taskData"></tasklist>
       </el-aside>
 
@@ -14,7 +14,7 @@
           <el-button
             :type="countButtonType"
             v-show="!currentCondition && !pomoCondition"
-            :disabled="countOn"
+            :disabled="countOn || currentStatus == -1"
             @click="startCount"
           >开始番茄钟</el-button>
           <el-button
@@ -28,29 +28,62 @@
             v-show="!currentCondition && pomoCondition && selected"
             @click="completePomos"
           >完成番茄钟</el-button>
-          <el-button type="success" v-show="currentCondition" @click="deletePomos">完成任务</el-button>
+          <el-button
+            type="success"
+            v-show="currentCondition"
+            :disabled="currentStatus == 2"
+            @click="finishTask"
+          >完成任务</el-button>
           <br>
         </div>
-
-        <h2>{{currentTaskName}}</h2>
-        <el-steps :active="currentFinishedPomo" space="100px" finish-status="success">
-          <el-step v-for="n in currentTotalPomo"></el-step>
-        </el-steps>
-        <br>
-        <h1 v-show="selected">任务详情</h1>
-        <el-form>
-          <el-form-item>
-            <el-input type="textarea" v-show="selected" :value="currentTaskDetail"></el-input>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" v-show="selected" @click="onSubmit">保存</el-button>
-            <el-button
-              type="danger"
-              v-show="!currentCondition && selected"
-              @click="deletePomos"
-            >废弃任务</el-button>
-          </el-form-item>
-        </el-form>
+        <div v-show="selected" style="margin-left: 20px; margin-right: 20px;">
+          <div style="margin-top: 20px; margin-bottom:20px;">
+            <h2>{{currentTaskName}}</h2>
+          </div>
+          <el-steps :active="currentFinishedPomo" space="100px" finish-status="success">
+            <el-step v-for="n in currentTotalPomo"></el-step>
+          </el-steps>
+          <br>
+          <h1 v-show="selected" style="margin-top: 10px;">任务时间</h1>
+          <div style="margin-top: 10px; margin-bottom: 10px; margin-left: 20px;">
+            <h2>至{{currentDeadline}}</h2>
+          </div>
+          <h1 v-show="selected">任务详情</h1>
+          <div style="margin-top: 20px">
+            <el-form>
+              <el-form-item>
+                <el-input
+                  type="textarea"
+                  v-show="selected"
+                  v-model="currentTaskDetail"
+                  :disabled="currentCondition"
+                ></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" v-show="selected" @click="onSubmit">保存</el-button>
+                <el-button type="danger" style="float: right;" @click="deleteTask">删除记录</el-button>
+                <el-button
+                  type="warning"
+                  style="float: right"
+                  :disabled="currentStatus == -1"
+                  @click="breakTask"
+                >废弃任务</el-button>
+              </el-form-item>
+            </el-form>
+          </div>
+        </div>
+        <el-footer height="60px" style="margin-top: 30px;">
+          <h1>每日小结 {{getcurrentTime}}</h1>
+          <Rate show-text allow-half v-model="selfRating">
+            <span style="color: #f5a632">{{selfRating}}</span>
+          </Rate>
+          <el-input
+            type="textarea"
+            v-model="dailySummary"
+            style="margin-top: 10px; margin-bottom:10px;"
+          ></el-input>
+          <el-button type="primary" @click="saveDailySummary" style="float: right;">提交</el-button>
+        </el-footer>
       </el-main>
     </el-container>
   </div>
@@ -67,8 +100,12 @@ export default {
   },
   data() {
     return {
+      dailySummary: "",
+      selfRating: 0,
+      getcurrentTime: "",
       countButtonType: "success",
       selected: false,
+      selectCancel: false,
       countOn: false,
       count: "0",
       minutes: "0",
@@ -80,26 +117,32 @@ export default {
       currentFinishedPomo: null,
       currentTotalPomo: null,
       currentCondition: false,
+      currentStatus: -2,
+      currentDeadline: null,
       pomoCondition: false,
-      taskData: [
-        {
-          index: 0,
-          task: "java ee项目",
-          detail: "数据库设计",
-          currentPomo: "1",
-          totalPomo: "3",
-          Pomo: "1/3"
-        },
-        {
-          index: 1,
-          task: "软件工程项目",
-          detail: "前端",
-          currentPomo: "3",
-          totalPomo: "3",
-          Pomo: "3/3"
-        }
-      ]
+      taskData: [],
+      taskRequestUrl: "http://localhost:8080/task/getTask",
+      taskStartUrl: "http://localhost:8080/task/startTask",
+      tomatoStartUrl: "http://localhost:8080/startTomato",
+      tomatoBreakUrl: "http://localhost:8080/breakTomato",
+      tomatoEndUrl: "http://localhost:8080/endTomato",
+      deleteTaskUrl: "http://localhost:8080/task/deleteTask",
+      modifyTaskUrl: "http://localhost:8080/task/modifyTask",
+      breakTaskUrl: "http://localhost:8080/task/breakTask"
     };
+  },
+  mounted() {
+    sessionStorage.userId = 2;
+    this.$http
+      .get(this.taskRequestUrl, { params: { userId: sessionStorage.userId } })
+      .then(response => {
+        this.taskData = response.data;
+      }),
+      response => {
+        console.log(failed);
+      };
+    this.getcurrentTime = this.currentTime();
+    this.getcurrentTime = this.getcurrentTime.substring(0, 9);
   },
   methods: {
     startCount() {
@@ -111,6 +154,13 @@ export default {
         this.pomoCondition = false;
         this.seconds = this.count % 60;
         this.minutes = parseInt(this.count / 60);
+        this.$http.get(this.tomatoStartUrl, {
+          params: {
+            userId: sessionStorage.userId,
+            taskName: this.currentTaskName,
+            startTime: null
+          }
+        });
         this.timer = setInterval(() => {
           if (this.count > 0 && this.count <= TIME_COUNT) {
             this.count--;
@@ -121,51 +171,264 @@ export default {
             this.countButtonType = "success";
             clearInterval(this.timer);
             this.timer = null;
-            this.pomoCondition = true;
-            if (!this.selected) {
-              this.$alert("请选择一个任务以完成本番茄钟", "提示", {
-                confirmButtonText: "确定",
-                callback: action => {}
-              });
+            if (this.count == 0) {
+              this.pomoCondition = true;
+              if (!this.selected) {
+                this.$alert("请选择一个任务以完成本番茄钟", "提示", {
+                  confirmButtonText: "确定",
+                  callback: action => {}
+                });
+              }
             }
           }
         }, 1000);
       }
     },
     stopCount() {
-      this.count = "0";
+      this.count = "-1";
       this.minutes = "0";
       this.seconds = "0";
-      this.currentFinishedPomo--;
-      this.taskData[this.currentTask].Pomo =
-        this.currentFinishedPomo + "/" + this.currentTotalPomo;
+      //this.currentFinishedPomo--;
+      this.$http.get(this.tomatoBreakUrl, {
+        params: { userId: sessionStorage.userId }
+      });
     },
     getTask(msg) {
-      this.selected = true;
-      this.currentTask = msg.index;
-      this.currentTaskName = msg.task;
-      this.currentFinishedPomo = msg.currentPomo;
-      this.currentTotalPomo = parseInt(msg.totalPomo);
-      this.currentTaskDetail = msg.detail;
+      if (msg == "new") {
+        this.$http
+          .get(this.taskRequestUrl, {
+            params: { userId: sessionStorage.userId }
+          })
+          .then(response => {
+            this.taskData = response.data;
+          }),
+          response => {
+            console.log("failed");
+          };
+        console.log(this.taskData);
+        return;
+      }
+      if (this.selectCancel) this.selectCancel = false;
+      else this.selected = true;
+      for (
+        this.currentTask = 0;
+        this.taskData[this.currentTask] != msg;
+        this.currentTask++
+      )
+        if (this.taskData[this.currentTask] == msg) {
+          break;
+        }
+      //this.currentTask = msg.index;
+      this.currentTaskName = msg.name;
+      this.currentFinishedPomo = msg.tomatoCompleted;
+      this.currentTotalPomo = parseInt(msg.expectedTomato);
+      this.currentTaskDetail = msg.description;
+      this.currentDeadline = msg.deadline;
+      this.currentStatus = msg.status;
       if (
-        this.taskData[this.currentTask].currentPomo ==
-        this.taskData[this.currentTask].totalPomo
+        this.taskData[this.currentTask].tomatoCompleted ==
+        this.taskData[this.currentTask].expectedTomato
       )
         this.currentCondition = true;
       else this.currentCondition = false;
     },
     completePomos() {
+      if (this.taskData[this.currentTask].status == 0) {
+        this.$http.get(this.taskStartUrl, {
+          params: {
+            userId: sessionStorage.userId,
+            taskName: this.taskData[this.currentTask].name
+          }
+        });
+        this.taskData[this.currentTask].status = 1;
+      }
       this.pomoCondition = false;
       this.currentFinishedPomo++;
-      this.taskData[this.currentTask].currentPomo++;
-      this.taskData[this.currentTask].Pomo =
-        this.currentFinishedPomo + "/" + this.currentTotalPomo;
+      this.taskData[this.currentTask].tomatoCompleted++;
+      this.$http.get(this.tomatoEndUrl, {
+        params: {
+          userId: sessionStorage.userId,
+          needAssociation: true,
+          taskName: this.currentTaskName
+        }
+      });
+      this.$http.get(this.modifyTaskUrl, {
+        params: {
+          userId: sessionStorage.userId,
+          taskName: this.currentTaskName,
+          property: "tomatoCompleted",
+          value: this.currentFinishedPomo
+        }
+      });
       if (
         this.taskData[this.currentTask].currentPomo ==
         this.taskData[this.currentTask].totalPomo
       )
         this.currentCondition = true;
       else this.currentCondition = false;
+    },
+    deleteTask() {
+      this.$confirm("此操作将永久删除该任务, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$http
+            .get(this.deleteTaskUrl, {
+              params: {
+                userId: this.taskData[this.currentTask].userId,
+                taskName: this.taskData[this.currentTask].name,
+                starttime: null
+              }
+            })
+            .then(() => {
+              this.$http
+                .get(this.taskRequestUrl, {
+                  params: { userId: sessionStorage.userId }
+                })
+                .then(response => {
+                  this.taskData = response.data;
+                  this.selectCancel = true;
+                  this.selected = false;
+                  this.$message({
+                    type: "success",
+                    message: "删除成功!"
+                  }),
+                    response => {
+                      console.log("failed");
+                    };
+                });
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
+    finishTask() {
+      this.$http.get(this.modifyTaskUrl, {
+        params: {
+          userId: sessionStorage.userId,
+          taskName: this.currentTaskName,
+          property: "status",
+          value: 2
+        }
+      });
+      this.taskData[this.currentTask].status = 2;
+      this.currentStatus = 2;
+    },
+    breakTask() {
+      this.$confirm("此操作将废弃当前任务, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$http.get(this.breakTaskUrl, {
+            params: {
+              userId: sessionStorage.userId,
+              taskName: this.currentTaskName
+            }
+          });
+          this.taskData[this.currentTask].status = -1;
+          this.currentStatus = -1;
+          this.$message({
+            type: "success",
+            message: "废弃成功!"
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消废弃"
+          });
+        });
+    },
+    onSubmit() {
+      this.$http
+        .get(this.modifyTaskUrl, {
+          params: {
+            userId: sessionStorage.userId,
+            taskName: this.taskData[this.currentTask].name,
+            property: "description",
+            value: this.currentTaskDetail
+          }
+        })
+        .then(() => {
+          this.$http
+            .get(this.taskRequestUrl, {
+              params: { userId: sessionStorage.userId }
+            })
+            .then(response => {
+              this.taskData = response.data;
+              this.$message({
+                message: "保存成功！",
+                type: "success"
+              });
+            }),
+            response => {
+              console.log(failed);
+            };
+        });
+    },
+    saveDailySummary() {
+      this.$http
+        .get(this.dailySummaryUrl, {
+          params: {
+            userId: sessionStorage.userId,
+            time: this.getcurrentTime,
+            selfRating: this.selfRating
+          }
+        })
+        .then(() => {
+          this.$http
+            .get(this.taskRequestUrl, {
+              params: { userId: sessionStorage.userId }
+            })
+            .then(response => {
+              this.taskData = response.data;
+              this.$message({
+                message: "保存成功！",
+                type: "success"
+              });
+            }),
+            response => {
+              console.log(failed);
+            };
+        });
+    },
+    dateFtt(fmt, date) {
+      //author: meizz
+      var o = {
+        "M+": date.getMonth() + 1, //月份
+        "d+": date.getDate(), //日
+        "h+": date.getHours(), //小时
+        "m+": date.getMinutes(), //分
+        "s+": date.getSeconds(), //秒
+        "q+": Math.floor((date.getMonth() + 3) / 3), //季度
+        S: date.getMilliseconds() //毫秒
+      };
+      if (/(y+)/.test(fmt))
+        fmt = fmt.replace(
+          RegExp.$1,
+          (date.getFullYear() + "").substr(4 - RegExp.$1.length)
+        );
+      for (var k in o)
+        if (new RegExp("(" + k + ")").test(fmt))
+          fmt = fmt.replace(
+            RegExp.$1,
+            RegExp.$1.length == 1
+              ? o[k]
+              : ("00" + o[k]).substr(("" + o[k]).length)
+          );
+      return fmt;
+    },
+    currentTime() {
+      var time = new Date();
+      return this.dateFtt("yyyy-MM-dd hh:mm:ss", time);
     }
   }
 };

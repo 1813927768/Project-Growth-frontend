@@ -41,13 +41,18 @@ export default {
       userID: 2
     };
   },
+  beforeCreate() {
+    // console.log("刷新");
+    localStorage.clear();
+  },
   //该组件在mounted之前就调用了TimeChange所以一些操作需要提前到created来做
   created() {
+    this.userID = sessionStorage.userId;
     openDB("dayTaskDB");
-    if (sessionStorage.storedTaskYear) {
+    if (localStorage.storedTaskYear) {
       //如果任务数据库已经被创建
       console.log("任务数据库已经被创建");
-      this.storedTaskYear = JSON.parse(sessionStorage.storedTaskYear);
+      this.storedTaskYear = JSON.parse(localStorage.storedTaskYear);
       // js的懒加载机制见识到了
       // searchData(
       //   monthAgo,
@@ -151,18 +156,17 @@ export default {
           //完全溢出什么都不更新
           var selectedData = date_slice(startDate, endDate, returnData);
           //debugger;
-          debugger;
           this.updateData(selectedData);
           for (var i of returnData) {
             //debugger;
             saveData(i, "dayTaskDB");
           }
+          this.storedTaskYear.push(year);
+          localStorage.storedTaskYear = JSON.stringify(this.storedTaskYear);
         })
         .catch(() => {
           console.log("获取信息失败");
         });
-      this.storedTaskYear.push(year);
-      sessionStorage.storedTaskYear = JSON.stringify(this.storedTaskYear);
     }
   }
 };
@@ -175,22 +179,6 @@ export default {
   max-width: none;
   margin: 0 auto;
   font-size: medium;
-}
-
-.abandon {
-  background: #fff;
-}
-
-.completed {
-  background: #fff;
-}
-
-.waiting {
-  background: #fff;
-}
-
-.running {
-  background: #fff;
 }
 </style>
 

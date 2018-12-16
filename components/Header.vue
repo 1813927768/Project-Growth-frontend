@@ -20,54 +20,57 @@
       ></el-menu-item>
       <el-submenu index="2" v-if="isVerified">
         <template slot="title">设置</template>
-        <el-menu-item index="2-1" :route="{path:this.$route.path}" @click="accountShow = true">账户设置</el-menu-item>
+        <el-menu-item index="2-1" :route="{path:this.$route.path}" @click="doSetting">账户设置</el-menu-item>
         <el-menu-item index="2-2" :route="{path:this.$route.path}" @click="taskShow = true">任务设置</el-menu-item>
-        <el-menu-item index="2-3" :route="{path:this.$route.path}">退出</el-menu-item>
+        <el-menu-item index="2-3" :route="{path:this.$route.path}" @click="logOut">退出</el-menu-item>
       </el-submenu>
+      <el-button @click="ToReg" v-if="!isVerified" type="success" size="small" class="reg-button">注册</el-button>
+      <el-button @click="ToLog" v-if="!isVerified" type="text" size="small" class="log-button">登录</el-button>
     </el-menu>
     <Modal v-model="accountShow" @on-ok="ok" @on-cancel="cancel" width="400">
-      <Tabs value="name1">
+      <Tabs value="name1" @on-click="accountTab">
         <TabPane label="账号" name="name1">
-        <div>
-          <label class="one-line">姓名：</label> 
-          <div class="one-line" v-if="changeName">
-            <Input v-model="nameValue" placeholder="Enter something..." style="width: 200px" />
-            <Button>保存</Button>
+          <div>
+            <label class="one-line">昵称：</label>
+            <div class="one-line" v-if="changeName">
+              <Input v-model="nameValue" placeholder="Enter something..." style="width: 200px"/>
+              <Button @click="nameChange">保存</Button>
+            </div>
+            <div class="one-line" v-else>
+              <span>{{username}}</span>
+              <Button type="text" @click="changeName = true">更换</Button>
+            </div>
           </div>
-          <div class="one-line" v-else>
-            <span>userName</span>
-            <Button type="text" @click="changeName = true">更换</Button>
-          </div>
-        </div>
           <br>
-        <div>
-          <label class="one-line">邮箱：</label> 
-          <div class="one-line" v-if="changeMail">
-            <Input v-model="mailValue" placeholder="Enter something..." style="width: 200px" />
-            <Button>保存</Button>
+          <div>
+            <label class="one-line">邮箱：</label>
+            <div class="one-line" v-if="changeMail">
+              <Input v-model="mailValue" placeholder="Enter something..." style="width: 200px"/>
+              <Button @click="mailChange">保存</Button>
+            </div>
+            <div class="one-line" v-else>
+              <span>{{email}}</span>
+              <Button type="text" @click="changeMail = true">更换</Button>
+            </div>
           </div>
-          <div class="one-line" v-else>
-            <span>userMail</span>
-            <Button type="text" @click="changeMail = true">更换</Button>
-          </div>
-        </div>
         </TabPane>
         <TabPane label="账号安全" name="name2">
           <div>原密码:
-            <Input v-model="originalPW" placeholder="请输入原密码" class="input-item"/>
+            <Input v-model="originalPW" type="password" placeholder="请输入原密码" class="input-item"/>
           </div>
           <br>
           <div>新密码:
-            <Input v-model="newPW" placeholder="请输入新密码" class="input-item"/>
+            <Input v-model="newPW" type="password" placeholder="请输入新密码" class="input-item"/>
           </div>
         </TabPane>
       </Tabs>
+      <div slot="footer" v-if="changePass">
+        <!-- <div>确定</div> -->
+        <Button type="error" @click="passChange">确认</Button>
+      </div>
     </Modal>
-    <Modal
-        v-model="taskShow"
-        @on-ok="ok"
-        @on-cancel="cancel">
-    <Tabs value="name1">
+    <Modal v-model="taskShow" @on-ok="timeChange" @on-cancel="cancel">
+      <Tabs value="name1">
         <TabPane label="目标设置" name="name1">
           <div class="one-line">
             <span>每日目标</span>
@@ -100,7 +103,7 @@
             <span>分钟</span>
           </div>
         </TabPane>
-    </Tabs>
+      </Tabs>
     </Modal>
   </div>
 </template>
@@ -108,44 +111,190 @@
 
 <script>
 import Menus from "@/config/header-config";
+import { delCookie } from "../assets/cookie.js";
+
+var mailurl = "http://localhost:8080/changeEmail ";
+var nameurl = "http://localhost:8080/changeUsername ";
+var pomourl = "http://localhost:8080/changeTomatoLength ";
+var passurl = "http://localhost:8080/changePassword ";
 
 export default {
   data() {
     return {
-      //isVerified:true,
+      username: "",
+      email: "",
       activeIndex: "3",
       activeIndex2: "2",
       accountShow: false,
       changeName: false,
-      taskShow:false,
-      dayGoal:1,
-      weekGoal:7,
-      monthGoal:30,
-      pomoTime:25,
-      restTime:5,
-      nameValue:"",
-      changeMail:false,
-      mailValue:"",
+      changePass: false,
+      taskShow: false,
+      dayGoal: 1,
+      weekGoal: 7,
+      monthGoal: 30,
+      pomoTime: 25,
+      restTime: 5,
+      nameValue: "",
+      changeMail: false,
+      mailValue: "",
       originalPW: "",
       newPW: "",
-      Menus: Menus
+      Menus: Menus,
+      userId: null
     };
   },
-  props: ['isVerified'],
+  mounted() {
+    console.log("header重载");
+    this.userId = sessionStorage.userId;
+    this.username = sessionStorage.username;
+    this.email = sessionStorage.email;
+    if (sessionStorage.tomoLength) {
+      this.pomoTime = parseInt(sessionStorage.tomoLength);
+    }
+  },
+  props: ["isVerified"],
   methods: {
+    passChange() {
+      console.log("修改密码");
+      if (this.newPW && this.originalPW) {
+        let data = {
+          oldPassword: this.originalPW,
+          newPassword: this.newPW,
+          userId: this.userId
+        };
+        /*接口请求*/
+        this.$http
+          .post(passurl, data, { emulateJSON: true })
+          .then(res => {
+            this.$Message.info("密码修改成功");
+          })
+          .catch(res => {
+            console.log("fail");
+            this.$Message.info("密码修改失败");
+          });
+      } else {
+        this.$Message.info("请输入密码");
+      }
+    },
+    accountTab(val) {
+      console.log(val);
+      if (val == "name2") {
+        this.changePass = true;
+      } else {
+        this.changePass = false;
+      }
+    },
+    logOut() {
+      this.$emit("logOut");
+      delCookie("userid");
+      this.$router.push({ name: "FrontPage" });
+    },
     handleSelect(key, keyPath) {
       console.log(key, keyPath);
-      //this.isVerified = false;
+    },
+    timeChange() {
+      console.log("changeTime");
+      this.$http
+        .get(pomourl, {
+          params: {
+            userId: this.userId,
+            tomatoLength: this.pomoTime
+          }
+        })
+        .then(res => {
+          // 响应成功回调
+          //console.log(res.body);
+          this.$Message.info("番茄时间修改成功");
+        })
+        .catch(() => {
+          console.log("番茄时间修改失败");
+          this.$Message.info("番茄时间修改失败");
+        });
+    },
+    mailChange() {
+      console.log("changeMail");
+      if (this.mailValue) {
+        this.$http
+          .get(mailurl, {
+            params: {
+              userId: this.userId,
+              email: this.mailValue
+            }
+          })
+          .then(res => {
+            // 响应成功回调
+            //console.log(res.body);
+            this.$Message.info("邮箱修改成功");
+          })
+          .catch(() => {
+            console.log("邮箱修改失败");
+            this.$Message.info("邮箱修改失败");
+          });
+      } else {
+        this.$Message.info("请输入有效的邮箱地址");
+      }
+    },
+    nameChange() {
+      console.log("changeName");
+      if (this.nameValue) {
+        this.$http
+          .get(nameurl, {
+            params: {
+              userId: this.userId,
+              username: this.nameValue
+            }
+          })
+          .then(res => {
+            // 响应成功回调
+            //console.log(res.body);
+            this.$Message.info("昵称修改成功");
+          })
+          .catch(() => {
+            console.log("昵称修改失败");
+            this.$Message.info("昵称修改失败");
+          });
+      } else {
+        this.$Message.info("请输入有效的昵称");
+      }
     },
     ok() {
       this.$Message.info("确认提交");
     },
-    cancel() {}
+    cancel() {},
+    ToReg() {
+      console.log("register");
+      this.$router.push({ name: "Reg" });
+    },
+    ToLog() {
+      console.log("login");
+      this.$router.push({ name: "Login" });
+    },
+    doSetting() {
+      console.log("打开");
+      this.accountShow = true;
+      this.changeName = this.changeMail = false;
+    }
   }
 };
 </script>
 
 <style>
+.abandon {
+  background-color: #000000 !important;
+}
+
+.completed {
+  background-color: #1eff00 !important;
+}
+
+.waiting {
+  background-color: #ffe800 !important;
+}
+
+.running {
+  background-color: #ff0000 !important;
+}
+
 .HeaderTitle {
   color: #149290;
   float: left;
@@ -161,14 +310,27 @@ export default {
 .input-item {
   width: 200px;
 }
-.one-line{
+.one-line {
   display: inline-block;
 }
 
-.input-number{
+.input-number {
   margin-left: 20px;
   margin-bottom: 5px;
   width: 50px;
 }
 
+.reg-button {
+  float: right;
+  margin-top: 8px;
+  margin-right: 10px;
+  /* height: 20px; */
+}
+
+.log-button {
+  float: right;
+  margin-top: 8px;
+  margin-right: 20px;
+  /* height: 20px; */
+}
 </style>

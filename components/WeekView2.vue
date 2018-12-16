@@ -74,10 +74,10 @@ export default {
     this.chartSettings = {
       xAxisType: "time"
     };
-    this.userID = 2;
     this.grid = { right: 30 }; //坐标图右侧宽度为60
     return {
       //默认为最近一月的数据
+      userID: 2,
       date: [monthAgo, nowTime],
       chartData: EMPTY_DATA,
       tableData: EMPTY_DATA.rows,
@@ -87,11 +87,16 @@ export default {
     };
   },
   components: { VeLine },
+  beforeCreate() {
+    // console.log("刷新");
+    localStorage.clear();
+  },
   mounted() {
+    this.userID = sessionStorage.userId;
     openDB("weekDB");
-    if (sessionStorage.weekhis) {
+    if (localStorage.weekhis) {
       //如果不是第一次进入页面，从数据库请求
-      this.storedYear = JSON.parse(sessionStorage.storedYear);
+      this.storedYear = JSON.parse(localStorage.storedYear);
       searchData(
         monthAgo,
         nowTime,
@@ -103,7 +108,7 @@ export default {
       );
     } else {
       //如果是第一次进入页面，从后端请求
-      sessionStorage.weekhis = true;
+      localStorage.weekhis = true;
       this.$http
         .get(historyurl, {
           params: {
@@ -126,6 +131,8 @@ export default {
               //debugger;
               saveData(i, "weekDB");
             }
+            this.storedYear = [new Date().getFullYear().toString()];
+            localStorage.storedYear = JSON.stringify(this.storedYear);
           },
           res => {
             console.log("获取信息失败" + res);
@@ -135,8 +142,6 @@ export default {
           console.log("处理请求失败");
         });
       //将请求的年份存储到session
-      this.storedYear = [new Date().getFullYear().toString()];
-      sessionStorage.storedYear = JSON.stringify(this.storedYear);
     }
   },
   methods: {
@@ -218,12 +223,12 @@ export default {
             //debugger;
             saveData(i, "weekDB");
           }
+          this.storedYear.push(year);
+          localStorage.storedYear = JSON.stringify(this.storedYear);
         })
         .catch(() => {
           console.log("获取信息失败");
         });
-      this.storedYear.push(year);
-      sessionStorage.storedYear = JSON.stringify(this.storedYear);
     }
   }
 };

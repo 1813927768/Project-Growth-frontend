@@ -17,10 +17,7 @@
     </div>
     <div class="section-container">
       <el-card class="box-card" v-for="i in showArticles" :key="i.id">
-        <img
-          src="https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=1802563968,897623865&fm=15&gp=0.jpg"
-          class="image"
-        >
+        <img :src="i.img" class="image">
         <div class="article">
           <div class="article-container">
             <a :href="i.url">
@@ -72,9 +69,13 @@ export default {
           this.showArticles.splice(i--, 1);
         }
       }
+      this.showArticles = this.showArticles.sort(function() {
+        return 0.5 - Math.random();
+      });
     }
   },
   mounted() {
+    this.userID = sessionStorage.userId;
     // Lambda写法
     this.$http
       .get(articleurl, {
@@ -85,6 +86,9 @@ export default {
           // 响应成功回调
           var returnData = res.body;
           this.showArticles = this.articles = returnData.Article;
+          this.showArticles = this.showArticles.sort(function() {
+            return 0.5 - Math.random();
+          });
           this.numToTag = returnData.tags;
           var tagName = Object.values(this.numToTag);
           for (var i = 0; i < tagName.length; i++) {

@@ -107,6 +107,7 @@ export default {
     }
   },
   mounted() {
+    this.userID = sessionStorage.userId;
     this.$http
       .get(weekurl, {
         params: { userid: this.userID }
