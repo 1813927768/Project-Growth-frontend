@@ -145,6 +145,10 @@ export default {
   },
   mounted() {
     console.log("header重载");
+    if (sessionStorage.userId) {
+      this.$emit("reload");
+    }
+
     this.userId = sessionStorage.userId;
     this.username = sessionStorage.username;
     this.email = sessionStorage.email;
@@ -187,6 +191,7 @@ export default {
     logOut() {
       this.$emit("logOut");
       delCookie("userid");
+      sessionStorage.userId = "";
       this.$router.push({ name: "FrontPage" });
     },
     handleSelect(key, keyPath) {
@@ -205,6 +210,7 @@ export default {
           // 响应成功回调
           //console.log(res.body);
           this.$Message.info("番茄时间修改成功");
+          sessionStorage.tomoLength = this.pomoTime;
         })
         .catch(() => {
           console.log("番茄时间修改失败");
@@ -299,7 +305,7 @@ export default {
   color: #149290;
   float: left;
   padding: 15px 15px;
-  font-size: 18px;
+  font-size: 24px;
   line-height: 20px;
   outline: none; /*取消选中后的蓝框*/
   text-decoration: none; /*取消a标签下划线*/

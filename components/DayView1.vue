@@ -30,10 +30,16 @@
         <p class="card-head">{{item.date}}</p>
         <p class="card-extra">{{getWeekByDay(item.date)}}</p>
       </div>
-      <Timeline class="time-line">
+      <Timeline class="time-line" v-if="selectedItem === '已完成的番茄' || selectedItem === '中断的番茄'">
         <TimelineItem v-for="i in item.content" :key="i.id">
           <p class="time">{{i.start+'-'+i.end}}</p>
           <p class="content">{{i.text}}</p>
+        </TimelineItem>
+      </Timeline>
+      <Timeline class="time-line" v-if="selectedItem === '已完成的任务' || selectedItem === '放弃的任务'">
+        <TimelineItem v-for="i in item.tempResult" :key="i.id">
+          <p class="time">{{i.time}}</p>
+          <p class="content">{{i.content}}</p>
         </TimelineItem>
       </Timeline>
       <div class="box-card" v-if="selectedItem === '已完成的番茄'">
@@ -54,7 +60,7 @@
         <p class="sum-content">你今天没有写小结哦。</p>
       </el-card>
       <el-card v-else shadow="never" class="box-card card-sum">每日小结
-        <Rate style="float:right;" allow-half disabled :value="showSumData[index].selfRating/2"/>
+        <Rate style="float:right;" allow-half disabled :value="showSumData[index].selfRating"/>
         <p class="sum-content">{{showSumData[index].content}}</p>
       </el-card>
     </div>
@@ -382,7 +388,7 @@ export default {
       //this.tableData = selectedData;
       let status, type;
       if (this.selectedItem == "已完成的番茄") {
-        status = 2;
+        status = 1;
         type = 0;
       } else if (this.selectedItem == "已完成的任务") {
         status = 2;
@@ -395,7 +401,7 @@ export default {
         type = 0;
       }
       this.sourceData = filter(selectedData, status, type);
-      //debugger;
+      // debugger;
       this.size = this.sourceData.length;
       this.pageChange(1);
     },

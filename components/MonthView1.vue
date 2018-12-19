@@ -35,7 +35,7 @@ const historyurl = "http://localhost:8080/task/querybyyear";
 export default {
   data() {
     return {
-      fcEvents: demoEvents,
+      fcEvents: [],
       storedTaskYear: [],
       date: [monthAgo, nowTime],
       userID: 2

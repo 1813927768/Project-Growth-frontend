@@ -85,7 +85,11 @@ export default {
         res => {
           // 响应成功回调
           var returnData = res.body;
-          this.showArticles = this.articles = returnData.Article;
+          this.articles = returnData.Article;
+          this.articles = this.articles.filter(item => {
+            return item.intro;
+          });
+          this.showArticles = this.articles;
           this.showArticles = this.showArticles.sort(function() {
             return 0.5 - Math.random();
           });
@@ -94,6 +98,7 @@ export default {
           for (var i = 0; i < tagName.length; i++) {
             this.tags[i].name = tagName[i];
           }
+          this.tags = this.tags.slice(0, tagName.length);
           this.loading = true;
         },
         res => {

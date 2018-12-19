@@ -90,6 +90,7 @@ export default {
   },
   data() {
     return {
+      tomoStartTime: "",
       dailySummary: "",
       selfRating: 0,
       countButtonType: "success",
@@ -119,11 +120,12 @@ export default {
       deleteTaskUrl: "http://localhost:8080/task/deleteTask",
       modifyTaskUrl: "http://localhost:8080/task/modifyTask",
       breakTaskUrl: "http://localhost:8080/task/breakTask",
+      endTaskUrl: "http://localhost:8080/task/endTask",
       dailySummaryUrl: "http://localhost:8080/summary/save"
     };
   },
   mounted() {
-    sessionStorage.userId = 2;
+    //sessionStorage.userId = 2;
     this.$http
       .get(this.taskRequestUrl, { params: { userId: sessionStorage.userId } })
       .then(response => {
@@ -133,7 +135,7 @@ export default {
         console.log(failed);
       };
     this.getcurrentTime = this.currentTime();
-    this.getcurrentTime = this.getcurrentTime.substring(0, 9);
+    this.getcurrentTime = this.getcurrentTime.substring(0, 10);
     sessionStorage.listLock = "false";
     console.log(this.getcurrentTime);
   },
@@ -146,7 +148,12 @@ export default {
         });
         return;
       }
-      const TIME_COUNT = 5;
+      if (sessionStorage.tomoLength) {
+        var TIME_COUNT = parseInt(sessionStorage.tomoLength) * 60;
+      } else {
+        var TIME_COUNT = 5;
+      }
+      var TIME_COUNT = 5;
       if (!this.timer) {
         this.count = TIME_COUNT;
         this.countOn = true;
@@ -163,11 +170,12 @@ export default {
           });
           this.taskData[this.currentTask].status = 1;
         }
+        this.tomoStartTime = new Date().format("yyyy-MM-dd hh:mm:ss");
         this.$http.get(this.tomatoStartUrl, {
           params: {
             userId: sessionStorage.userId,
             taskName: this.currentTaskName,
-            startTime: null
+            startTime: this.tomoStartTime
           }
         });
         this.timer = setInterval(() => {
@@ -188,7 +196,9 @@ export default {
                 params: {
                   userId: sessionStorage.userId,
                   needAssociation: true,
-                  taskName: this.currentTaskName
+                  taskName: this.currentTaskName,
+                  startTime: this.tomoStartTime,
+                  endTime: new Date().format("yyyy-MM-dd hh:mm:ss")
                 }
               });
               this.$http.get(this.modifyTaskUrl, {
@@ -216,7 +226,11 @@ export default {
       this.seconds = "0";
       //this.currentFinishedPomo--;
       this.$http.get(this.tomatoBreakUrl, {
-        params: { userId: sessionStorage.userId }
+        params: {
+          userId: sessionStorage.userId,
+          breakTime: new Date().format("yyyy-MM-dd hh:mm:ss"),
+          startTime: this.tomoStartTime
+        }
       });
     },
     getTask(msg) {
@@ -300,12 +314,11 @@ export default {
         });
     },
     finishTask() {
-      this.$http.get(this.modifyTaskUrl, {
+      this.$http.get(this.endTaskUrl, {
         params: {
           userId: sessionStorage.userId,
           taskName: this.currentTaskName,
-          property: "status",
-          value: 2
+          startTime: new Date().format("yyyy-MM-dd hh:mm:ss")
         }
       });
       this.taskData[this.currentTask].status = 2;
@@ -399,7 +412,8 @@ export default {
       this.$http
         .get(this.dailySummaryUrl, {
           params: {
-            userId: sessionStorage.userId,
+            userid: sessionStorage.userId,
+            content: this.dailySummary,
             time: this.getcurrentTime,
             selfRating: this.selfRating
           }

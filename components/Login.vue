@@ -72,9 +72,10 @@ export default {
   props: ["isReg"],
   mounted() {
     /*页面挂载获取cookie，如果存在username的cookie，则跳转到主页，不需登录*/
-    if (getCookie("userid")) {
+    var userId = getCookie("userid");
+    if (userId) {
       //修改
-      this.$emit("userSignIn", 2);
+      this.$emit("userSignIn", userId);
       this.$router.push("/PomoMode");
       console.log("cookie exist");
     }
@@ -100,13 +101,14 @@ export default {
             sessionStorage.email = res[2];
             sessionStorage.tomoLength = res[4];
             /*接口的传值是(-1,该用户不存在),(0,密码错误)，同时还会检测管理员账号的值*/
-            if (code == -1) {
+            if (code == "No user!") {
               this.tishi = "该用户不存在";
               this.showTishi = true;
-            } else if (code == 0) {
+            } else if (code == "Wrong password!") {
               this.tishi = "密码输入错误";
               this.showTishi = true;
             } else {
+              // debugger;
               this.tishi = "登录成功";
               this.showTishi = true;
               var userID = code;

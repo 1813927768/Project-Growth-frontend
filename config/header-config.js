@@ -1,13 +1,13 @@
 var Menus = [{
-    name: 'Mode1',
+    name: '任务模式',
     id: 'mode1',
     componentName: 'TaskMode'
 }, {
-    name: 'Mode2',
+    name: '番茄模式',
     id: 'mode2',
     componentName: 'PomoMode'
 }, {
-    name: 'History&Anlysis',
+    name: '历史分析',
     id: 'HA',
     componentName: 'AnalyHis'
 }, {

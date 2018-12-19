@@ -2,7 +2,7 @@
   <div id="app">
     <el-container>
       <el-header class="header">
-        <vheader @logOut="logOut" :isVerified="this.isVerified"/>
+        <vheader @logOut="logOut" @reload="reload" :isVerified="this.isVerified"/>
       </el-header>
       <router-view @userSignIn="userSignIn"></router-view>
     </el-container>
@@ -33,7 +33,6 @@ export default {
       if (sessionStorage.userId && parseInt(sessionStorage.userId) !== userID) {
         console.log(userID);
         //清空前用户的数据
-        debugger;
         localStorage.clear();
         deleteDB("weekDB");
         deleteDB("daySumDB");
@@ -50,6 +49,10 @@ export default {
       console.log("logOut");
       // sessionStorage.isVerified = false;
       this.isVerified = false;
+    },
+    reload() {
+      console.log("header重载反馈");
+      this.isVerified = true;
     }
   }
 };

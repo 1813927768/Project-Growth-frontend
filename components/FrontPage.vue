@@ -6,7 +6,7 @@
       </h1>
       <h2>基于番茄工作法的简单易行的时间管理工具</h2>
       <div class="center">
-        <el-carousel :interval="5000" arrow="always">
+        <el-carousel :interval="5000" arrow="always" class="carousel">
           <el-carousel-item v-for="item in images" :key="item.id">
             <img :src="item.path" :alt="item.alt">
             <!-- <h3>{{ item }}</h3> -->
@@ -58,15 +58,15 @@ export default {
     return {
       images: [
         {
-          path: "https://www.tomatowork.com/public/statics/images/screen_0.png",
+          path: require("../assets/1.png"),
           alt: "历史纪录"
         },
         {
-          path: "https://www.tomatowork.com/public/statics/images/screen_1.png",
+          path: require("../assets/2.png"),
           alt: "统计分析"
         },
         {
-          path: "https://www.tomatowork.com/public/statics/images/screen_2.png",
+          path: require("../assets/3.png"),
           alt: "工作台"
         }
       ]
@@ -113,8 +113,16 @@ export default {
 }
 
 .info img {
-  border: 1px solid #d9d9d9;
+  /* border: 1px solid #d9d9d9; */
   padding: 1px;
+}
+
+img {
+  display: block;
+  width: 100%;
+  /* height: 500px; */
+  object-fit: cover;
+  /* padding: auto; */
 }
 
 .info .carousel-control.right,
@@ -125,6 +133,7 @@ export default {
 .center {
   margin: auto;
   width: 75%;
+  /* height: 600px; */
 }
 
 .el-carousel__item h3 {
