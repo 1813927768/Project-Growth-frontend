@@ -14,6 +14,10 @@ var Menus = [{
     name: '推荐',
     id: 'RA',
     componentName: 'Recom'
+}, {
+    name: '反馈',
+    id: 'FL',
+    componentName: 'FeedList'
 }]
 
 export default Menus;

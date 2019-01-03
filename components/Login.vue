@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="login-wrap">
+    <div class="login-wrap" @keyup.enter="login">
       <h3>登录</h3>
       <p v-show="showTishi">{{tishi}}</p>
       <el-input class="input" placeholder="请输入用户名" v-model="username" clearable></el-input>

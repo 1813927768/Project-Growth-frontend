@@ -63,6 +63,18 @@
             <Input v-model="newPW" type="password" placeholder="请输入新密码" class="input-item"/>
           </div>
         </TabPane>
+        <TabPane label="修改头像" name="name3">
+          <el-upload
+            class="avatar-uploader"
+            action="https://jsonplaceholder.typicode.com/posts/"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img v-if="imageUrl" :src="imageUrl" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+        </TabPane>
       </Tabs>
       <div slot="footer" v-if="changePass">
         <!-- <div>确定</div> -->
@@ -121,6 +133,7 @@ var passurl = "http://localhost:8080/changePassword ";
 export default {
   data() {
     return {
+      imageUrl: "",
       username: "",
       email: "",
       activeIndex: "3",
@@ -158,6 +171,22 @@ export default {
   },
   props: ["isVerified"],
   methods: {
+    handleAvatarSuccess(res, file) {
+      this.imageUrl = URL.createObjectURL(file.raw);
+      debugger;
+    },
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === "image/jpeg";
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isJPG) {
+        this.$message.error("上传头像图片只能是 JPG 格式!");
+      }
+      if (!isLt2M) {
+        this.$message.error("上传头像图片大小不能超过 2MB!");
+      }
+      return isJPG && isLt2M;
+    },
     passChange() {
       console.log("修改密码");
       if (this.newPW && this.originalPW) {
@@ -285,20 +314,28 @@ export default {
 </script>
 
 <style>
-.abandon {
-  background-color: #000000 !important;
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
-
-.completed {
-  background-color: #1eff00 !important;
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
 }
-
-.waiting {
-  background-color: #ffe800 !important;
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 90px;
+  height: 90px;
+  line-height: 90px;
+  text-align: center;
 }
-
-.running {
-  background-color: #ff0000 !important;
+.avatar {
+  width: 90px;
+  height: 90px;
+  display: block;
 }
 
 .HeaderTitle {

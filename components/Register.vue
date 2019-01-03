@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="register-wrap">
+    <div class="register-wrap" @keyup.enter="register">
       <h3>注册</h3>
       <p v-show="showTishi">{{tishi}}</p>
       <el-input class="input" placeholder="请输入用户名" v-model="newUsername" clearable></el-input>

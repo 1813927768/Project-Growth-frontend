@@ -28,6 +28,7 @@ menus.forEach(element => {
   })
 });
 
+//二级路由
 routes[2].children = croutes;
 
 routes.push({
@@ -49,6 +50,18 @@ routes.push({
   name: 'FrontPage',
   component: () => import(`@/components/FrontPage`),
   // props: true,
+})
+
+routes.push({
+  path: `/FeedBack`,
+  name: 'FeedBack',
+  component: () => import(`@/components/FeedBack`),
+})
+
+routes.push({
+  path: `/FeedHandle`,
+  name: 'FeedHandle',
+  component: () => import(`@/components/AdminFeedHandle`),
 })
 
 export default new Router({

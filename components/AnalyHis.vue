@@ -25,3 +25,21 @@ export default {
 };
 </script>
 
+<style>
+.abandon {
+  background-color: #000000 !important;
+}
+
+.completed {
+  background-color: #1eff00 !important;
+}
+
+.waiting {
+  background-color: #ffe800 !important;
+}
+
+.running {
+  background-color: #ff0000 !important;
+}
+</style>
+
