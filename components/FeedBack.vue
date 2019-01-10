@@ -25,8 +25,8 @@
                   ></i-input>
                 </FormItem>
                 <FormItem>
-                  <Button type="primary">提交</Button>
-                  <Button type="ghost">清空信息</Button>
+                  <Button type="primary" @click="submit">提交</Button>
+                  <Button type="error" class="returnButton" @click="goBack">返回</Button>
                 </FormItem>
               </Form>
             </div>
@@ -38,15 +38,51 @@
 </template>
 
 <script>
+var submitUrl = "http://localhost:8080/submitFeedback";
+
 export default {
   name: "Freeback",
   data() {
     return {
       formItem: {
         title: "",
-        content: ""
+        content: "",
+        userID: null
       }
     };
+  },
+  mounted() {
+    // this.userID = sessionStorage.userId;
+    this.userID = 1;
+  },
+  methods: {
+    goBack() {
+      console.log("feedlist");
+      this.$router.push({ name: "FeedList" });
+    },
+    submit() {
+      var data = {
+        content: this.content,
+        title: this.title,
+        userid: this.userID
+      };
+      console.log("submit");
+      this.$http
+        .post(submitUrl, data, { emulateJSON: true })
+        .then(
+          res => {
+            // 响应成功回调
+            console.log(res);
+          },
+          res => {
+            // 响应错误回调
+            console.log("fail");
+          }
+        )
+        .catch(() => {
+          console.log("process fail");
+        });
+    }
   }
 };
 </script>
@@ -85,5 +121,8 @@ export default {
 .freeback-form {
   margin: 30px auto;
   width: 90%;
+}
+.returnButton {
+  display: right;
 }
 </style>

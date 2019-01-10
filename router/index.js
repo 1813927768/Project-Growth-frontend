@@ -59,7 +59,13 @@ routes.push({
 })
 
 routes.push({
-  path: `/FeedHandle`,
+  path: `/FeedList`,
+  name: 'FeedList',
+  component: () => import(`@/components/FeedList`),
+})
+
+routes.push({
+  path: `/Admin`,
   name: 'FeedHandle',
   component: () => import(`@/components/AdminFeedHandle`),
 })

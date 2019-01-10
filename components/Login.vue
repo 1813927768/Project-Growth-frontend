@@ -85,6 +85,17 @@ export default {
       console.log("register");
       this.$router.push({ name: "Reg" });
     },
+    logInSuccess(userID) {
+      /*向父组件传值*/
+      this.$emit("userSignIn", userID);
+      setCookie("userid", userID, 1000 * 60);
+      setTimeout(
+        function() {
+          this.$router.push("/PomoMode");
+        }.bind(this),
+        1000
+      );
+    },
     login() {
       if (this.username == "" || this.password == "") {
         alert("请输入用户名或密码");
@@ -107,20 +118,13 @@ export default {
             } else if (code == "Wrong password!") {
               this.tishi = "密码输入错误";
               this.showTishi = true;
+              this.logInSuccess(2);
             } else {
               // debugger;
               this.tishi = "登录成功";
               this.showTishi = true;
-              var userID = code;
-              /*向父组件传值*/
-              this.$emit("userSignIn", userID);
-              setCookie("userid", userID, 1000 * 60);
-              setTimeout(
-                function() {
-                  this.$router.push("/PomoMode");
-                }.bind(this),
-                1000
-              );
+              // var userID = code;
+              this.logInSuccess(code);
             }
           })
           .catch(res => {
