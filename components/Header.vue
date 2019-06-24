@@ -129,6 +129,9 @@ var mailurl = "http://localhost:8080/changeEmail ";
 var nameurl = "http://localhost:8080/changeUsername ";
 var pomourl = "http://localhost:8080/changeTomatoLength ";
 var passurl = "http://localhost:8080/changePassword ";
+var changeDayGoal = "http://localhost:8080/changeDayGoal ";
+var changeWeekGoal = "http://localhost:8080/changeWeekGoal ";
+var changeMonthGoal = "http://localhost:8080/changeMonthGoal ";
 
 export default {
   data() {
@@ -163,8 +166,15 @@ export default {
     }
 
     this.userId = sessionStorage.userId;
+    // if (this.userId == undefined) {
+    //   debugger;
+    //   this.$emit("reload");
+    // }
     this.username = sessionStorage.username;
     this.email = sessionStorage.email;
+    this.dayGoal = parseInt(sessionStorage.dayGoal);
+    this.weekGoal = parseInt(sessionStorage.weekGoal);
+    this.monthGoal = parseInt(sessionStorage.monthGoal);
     if (sessionStorage.tomoLength) {
       this.pomoTime = parseInt(sessionStorage.tomoLength);
     }
@@ -199,7 +209,9 @@ export default {
         this.$http
           .post(passurl, data, { emulateJSON: true })
           .then(res => {
-            this.$Message.info("密码修改成功");
+            if (res.body == true) {
+              this.$Message.info("密码修改成功");
+            }
           })
           .catch(res => {
             console.log("fail");
@@ -227,7 +239,7 @@ export default {
       console.log(key, keyPath);
     },
     timeChange() {
-      console.log("changeTime");
+      console.log("changeTime&Goal");
       this.$http
         .get(pomourl, {
           params: {
@@ -238,12 +250,63 @@ export default {
         .then(res => {
           // 响应成功回调
           //console.log(res.body);
-          this.$Message.info("番茄时间修改成功");
+          // this.$Message.info("番茄时间修改成功");
           sessionStorage.tomoLength = this.pomoTime;
         })
         .catch(() => {
           console.log("番茄时间修改失败");
-          this.$Message.info("番茄时间修改失败");
+          // this.$Message.info("番茄时间修改失败");
+        });
+      this.$http
+        .get(changeDayGoal, {
+          params: {
+            userId: this.userId,
+            dayGoal: this.dayGoal
+          }
+        })
+        .then(res => {
+          // 响应成功回调
+          //console.log(res.body);
+          // this.$Message.info("每日目标修改成功");
+          sessionStorage.dayGoal = this.dayGoal;
+        })
+        .catch(() => {
+          console.log("每日目标修改失败");
+          // this.$Message.info("番茄时间修改失败");
+        });
+      this.$http
+        .get(changeWeekGoal, {
+          params: {
+            userId: this.userId,
+            weekGoal: this.weekGoal
+          }
+        })
+        .then(res => {
+          // 响应成功回调
+          //console.log(res.body);
+          // this.$Message.info("每日目标修改成功");
+          sessionStorage.weekGoal = this.weekGoal;
+        })
+        .catch(() => {
+          console.log("每周目标修改失败");
+          // this.$Message.info("番茄时间修改失败");
+        });
+      this.$http
+        .get(changeMonthGoal, {
+          params: {
+            userId: this.userId,
+            monthGoal: this.monthGoal
+          }
+        })
+        .then(res => {
+          // 响应成功回调
+          //console.log(res.body);
+          // this.$Message.info("每日目标修改成功");
+          sessionStorage.monthGoal = this.monthGoal;
+        })
+        .catch(() => {
+          console.log("每月目标修改失败");
+          // this.$Message.info("番茄时间修改失败");
         });
     },
     mailChange() {

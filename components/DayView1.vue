@@ -286,7 +286,6 @@ export default {
       }
       if (storedYear.indexOf(reqMaxYear) == -1) {
         //溢出
-        debugger;
         console.log("溢出");
         this.requestData(reqMinYear, 2, reqDB);
       } else {

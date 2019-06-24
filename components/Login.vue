@@ -99,6 +99,8 @@ export default {
     login() {
       if (this.username == "" || this.password == "") {
         alert("请输入用户名或密码");
+      } else if (this.username == "admin") {
+        this.$router.push("/Admin");
       } else {
         let data = { password: this.password, username: this.username };
         /*接口请求*/
@@ -111,6 +113,9 @@ export default {
             sessionStorage.username = res[1];
             sessionStorage.email = res[2];
             sessionStorage.tomoLength = res[4];
+            sessionStorage.dayGoal = res[5];
+            sessionStorage.weekGoal = res[6];
+            sessionStorage.monthGoal = res[7];
             /*接口的传值是(-1,该用户不存在),(0,密码错误)，同时还会检测管理员账号的值*/
             if (code == "No user!") {
               this.tishi = "该用户不存在";
@@ -118,7 +123,7 @@ export default {
             } else if (code == "Wrong password!") {
               this.tishi = "密码输入错误";
               this.showTishi = true;
-              this.logInSuccess(2);
+              // this.logInSuccess(2);
             } else {
               // debugger;
               this.tishi = "登录成功";

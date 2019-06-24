@@ -69,7 +69,7 @@ var testData = [
 export default {
   data() {
     return {
-      pageSize: 3,
+      pageSize: 5,
       reply: "",
       currentRow: null,
       tableData: [],
@@ -133,6 +133,9 @@ export default {
         .then(
           res => {
             // 响应成功回调
+            this.$Message.info("提交成功");
+            this.currentRow.status = "已处理";
+            this.currentRow.answer = this.reply;
             console.log(res);
           },
           res => {

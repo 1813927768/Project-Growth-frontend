@@ -19,6 +19,9 @@ var menus = [{
   }, {
     name: '建议',
     componentName: 'Advice',
+  }, {
+    name: '目标',
+    componentName: 'Goal',
   }]
 }]
 

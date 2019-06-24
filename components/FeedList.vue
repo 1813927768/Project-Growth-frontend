@@ -139,8 +139,8 @@ export default {
     }
   },
   mounted() {
-    // this.userID = sessionStorage.userId;
-    this.userID = 1;
+    this.userID = sessionStorage.userId;
+    // this.userID = 1;
     this.$http
       .get(getUrl, {
         params: { userid: this.userID }

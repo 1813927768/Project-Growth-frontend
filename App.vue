@@ -2,7 +2,7 @@
   <div id="app">
     <el-container>
       <el-header class="header">
-        <vheader @logOut="logOut" @reload="reload" :isVerified="this.isVerified"/>
+        <vheader v-if="load" @logOut="logOut" @reload="reload" :isVerified="this.isVerified"/>
       </el-header>
       <router-view @userSignIn="userSignIn"></router-view>
     </el-container>
@@ -21,7 +21,8 @@ export default {
   data() {
     return {
       userId: sessionStorage.userId,
-      isVerified: false
+      isVerified: false,
+      load: true
       // isVerified:true,
     };
   },
@@ -43,12 +44,19 @@ export default {
       sessionStorage.userId = userID;
       this.userId = sessionStorage.userId;
       sessionStorage.isVerified = true;
-      this.isVerified = sessionStorage.isVerified;
+      this.isVerified = true;
+      this.loading();
     },
     logOut() {
       console.log("logOut");
       // sessionStorage.isVerified = false;
       this.isVerified = false;
+    },
+    loading() {
+      this.load = false;
+      this.$nextTick(() => {
+        this.load = true;
+      });
     },
     reload() {
       console.log("header重载反馈");

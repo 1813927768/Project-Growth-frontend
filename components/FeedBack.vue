@@ -52,8 +52,8 @@ export default {
     };
   },
   mounted() {
-    // this.userID = sessionStorage.userId;
-    this.userID = 1;
+    this.userID = sessionStorage.userId;
+    // this.userID = 1;
   },
   methods: {
     goBack() {
@@ -62,17 +62,20 @@ export default {
     },
     submit() {
       var data = {
-        content: this.content,
-        title: this.title,
+        content: this.formItem.content,
+        title: this.formItem.title,
         userid: this.userID
       };
       console.log("submit");
+      // debugger;
       this.$http
         .post(submitUrl, data, { emulateJSON: true })
         .then(
           res => {
             // 响应成功回调
-            console.log(res);
+            this.$Message.info("提交成功");
+            console.log("提交成功");
+            this.$router.push({ name: "FeedList" });
           },
           res => {
             // 响应错误回调

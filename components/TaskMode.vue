@@ -131,11 +131,8 @@ export default {
       .then(response => {
         this.taskData = response.data;
       }),
-      response => {
-        console.log(failed);
-      };
-    this.getcurrentTime = this.currentTime();
-    this.getcurrentTime = this.getcurrentTime.substring(0, 10);
+      response => {};
+
     sessionStorage.listLock = "false";
     console.log(this.getcurrentTime);
   },
@@ -293,7 +290,6 @@ export default {
                   params: { userId: sessionStorage.userId }
                 })
                 .then(response => {
-                  this.taskData = response.data;
                   this.selectCancel = true;
                   this.selected = false;
                   this.$message({

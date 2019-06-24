@@ -13,14 +13,26 @@
 
 <script>
 import NavMenu from "@/components/NavMenu";
+import "echarts/lib/chart/line";
+// import VeLine from "v-charts/lib/line";
+import VePie from "v-charts/lib/pie.js";
 
 export default {
   components: {
-    navmenu: NavMenu
+    navmenu: NavMenu,
+    VePie
   },
   mounted() {
     console.log("his page");
     this.$router.push({ name: "DayView1" });
+  },
+  data() {
+    return {
+      pieData: {
+        columns: ["状态", "进度"],
+        rows: [{ 状态: "1/1", 进度: 1393 }, { 状态: "1/2", 进度: 3530 }]
+      }
+    };
   }
 };
 </script>
